@@ -1,30 +1,58 @@
 package tiles;
 
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import java.util.ArrayList;
 
 public class Tile {
 
-    private final Color color;
-    private ArrayList<Circle> objects;
+    private ArrayList<Circle> elements;
+    private int x, y; // x-y coordinate of upper-left corner
 
-    public Tile(Color background, ArrayList<Circle> objects) {
+    public Tile(ArrayList<Circle> elements, int x, int y) {
 
-        this.color = background;
-        this.objects = objects;
-
-    }
-
-    public boolean matchObjects(ArrayList<Circle> objects) {
-
-        return this.objects.removeAll(objects);
+        this.elements = elements;
+        this.x = x;
+        this.y = y;
 
     }
 
-    public Color getColor() {
+    public static boolean matchObjects(Tile first, Tile second) {
 
-        return this.color;
+        boolean matchExist = false;
+
+
+
+        return matchExist;
+
+    }
+
+    protected void removeElements(ArrayList<Circle> elements) {
+
+        elements.removeAll(elements);
+
+    }
+
+    public int getX() {
+
+        return x;
+
+    }
+
+    public void setX(int x) {
+
+        this.x = x;
+
+    }
+
+    public int getY() {
+
+        return y;
+
+    }
+
+    public void setY(int y) {
+
+        this.y = y;
 
     }
 

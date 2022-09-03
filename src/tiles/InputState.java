@@ -5,8 +5,8 @@ import javafx.scene.input.MouseEvent;
 
 public class InputState {
 
-    private double x;
-    private double y;
+    private double x = -1;
+    private double y = -1;
 
     public EventHandler<MouseEvent> getMouseHandler() {
 
@@ -16,6 +16,15 @@ public class InputState {
             y = event.getY();
 
         };
+
+    }
+
+    public double getX() { return x; }
+    public double getY() { return y; }
+
+    public void reset() {
+
+        x = y = -1;
 
     }
 
