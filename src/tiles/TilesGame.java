@@ -17,6 +17,8 @@ import javafx.scene.input.MouseEvent;
 import java.time.Duration;
 import java.util.ArrayList;
 
+import java.util.Random;
+
 public class TilesGame extends Application {
 
     // Tile parameters
@@ -27,10 +29,16 @@ public class TilesGame extends Application {
     private static final int TILE_WIDTH = 100;
     private static final int TILE_HEIGHT = 100;
 
-    // Array of tile background colors to choose from
-    //Color[] bgColors = new Color[5];
-    Color bgColors1 = Color.NAVY;
-    Color bgColors2 = Color.GREY;
+    // Create Tile arrayList
+    private static final ArrayList<Tile> tiles = new ArrayList<>(NUM_ROWS * NUM_COLS);
+
+    // Circle colors to choose randomly from
+    private static final Color[] colors = {
+            Color.GREEN,
+            Color.AQUAMARINE,
+            Color.FUCHSIA,
+            Color.PURPLE
+    };
 
     public static void main(String[] args) {
 
@@ -45,13 +53,14 @@ public class TilesGame extends Application {
         stage.setTitle("Tiles Game by Adrian Abeyta");
         //stage.setResizable(false);
 
-        stage.setWidth((NUM_COLS * TILE_WIDTH) + ((NUM_COLS - 1) * H_GAP * 2));
+        int windowWidth = (NUM_COLS * TILE_WIDTH) + ((NUM_COLS - 1) * H_GAP * 2);
+        stage.setWidth(windowWidth);
         int windowHeight = (NUM_ROWS * TILE_HEIGHT + ((NUM_ROWS - 1) * V_GAP * 2)) + 100;
         stage.setHeight(windowHeight);
 
         System.out.println(stage.getWidth()); // WHY DOESNT THIS WORK
 
-        Group group = new Group();
+        Group sceneGroup = new Group();
 
         // Set up the game board properties
         TilePane board = new TilePane(Orientation.HORIZONTAL, H_GAP, V_GAP);
@@ -61,14 +70,20 @@ public class TilesGame extends Application {
         board.setPrefTileWidth(TILE_WIDTH);
         board.setPrefTileHeight(TILE_HEIGHT);
 
-        // Create the board tile rectangle graphics
-        for(int i = 0; i < NUM_ROWS * NUM_COLS; i++) {
+        Random random = new Random();
+        for(int i = 0; i < NUM_ROWS; i++) {
 
-            // Alternate colors of subsequent tiles
-            Color tileColor = (i % 2 == 0)? bgColors1 : bgColors2;
+            for (int j = 0; j < NUM_COLS; j++) {
 
-            Rectangle rectangle = new Rectangle(100, 100, tileColor);
-            board.getChildren().add(rectangle);
+                ArrayList<Circle> elements = new ArrayList<>(2);
+                elements.add(new Circle(TILE_WIDTH / 4, TILE_HEIGHT / 4, random.nextInt(10), Color.NAVY));
+                elements.add(new Circle(random.nextInt(10), 20, 5, Color.GREEN));
+
+                tiles.add(new Tile(elements, (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP))));
+
+                board.getChildren().add(tiles.get((NUM_COLS * i) + j).getGroup());
+
+            }
 
         }
 
@@ -78,9 +93,9 @@ public class TilesGame extends Application {
 
         Text streakCurrent = new Text(0, windowHeight - 80, "Current Streak: ");
         Text streakLongest = new Text(0, windowHeight - 60, "Longest Streak: ");
-        group.getChildren().addAll(board, streakCurrent, streakLongest);
+        sceneGroup.getChildren().addAll(board, streakCurrent, streakLongest);
 
-        Scene scene = new Scene(group, stage.getWidth(), stage.getHeight());
+        Scene scene = new Scene(sceneGroup, stage.getWidth(), stage.getHeight());
 
         stage.setScene(scene);
         stage.show();
@@ -93,24 +108,8 @@ public class TilesGame extends Application {
             int choiceState = 0; // # of tiles currently selected
             int row_1, row_2, col_1, col_2;
 
-            private static final ArrayList<Tile> tiles = new ArrayList<>(NUM_ROWS * NUM_COLS);
-
             @Override
             public void handle(long now) {
-
-                if(nextTime == 0) {
-
-                    for(int i = 0; i < NUM_ROWS; i++) {
-
-                        for(int j = 0; j < NUM_COLS; j++) {
-
-                            tiles.add(new Tile(new ArrayList<>(), (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP))));
-
-                        }
-
-                    }
-
-                }
 
                 if(now > nextTime) {
 
@@ -125,7 +124,8 @@ public class TilesGame extends Application {
 
                         int index = (NUM_COLS * row_1) + col_1;
 
-                        group.getChildren().add(new Rectangle(tiles.get(index).getX(), tiles.get(index).getY(), 100, 100));
+                        sceneGroup.getChildren().add(new Rectangle(tiles.get(index).getX(), tiles.get(index).getY(), 100, 100));
+
                         choiceState++;
                         mouseInput.reset();
 
