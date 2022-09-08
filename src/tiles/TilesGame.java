@@ -5,18 +5,14 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.Group;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.paint.Paint;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.layout.TilePane;
 import javafx.geometry.Orientation;
 import javafx.scene.text.Text;
-import javafx.scene.input.MouseEvent;
-
 import java.time.Duration;
 import java.util.ArrayList;
-
 import java.util.Random;
 
 public class TilesGame extends Application {
@@ -40,6 +36,10 @@ public class TilesGame extends Application {
             Color.PURPLE
     };
 
+    // User-selected tiles
+    private static Tile choice1, choice2;
+    private static int choiceIndex1, choiceIndex2;
+
     public static void main(String[] args) {
 
         launch(args);
@@ -58,7 +58,8 @@ public class TilesGame extends Application {
         int windowHeight = (NUM_ROWS * TILE_HEIGHT + ((NUM_ROWS - 1) * V_GAP * 2)) + 100;
         stage.setHeight(windowHeight);
 
-        System.out.println(stage.getWidth()); // WHY DOESNT THIS WORK
+        //System.out.println(stage.getWidth());
+        // WHY DOESNT THIS WORK
 
         Group sceneGroup = new Group();
 
@@ -75,9 +76,12 @@ public class TilesGame extends Application {
 
             for (int j = 0; j < NUM_COLS; j++) {
 
-                ArrayList<Circle> elements = new ArrayList<>(2);
-                elements.add(new Circle(TILE_WIDTH / 4, TILE_HEIGHT / 4, random.nextInt(10), Color.NAVY));
-                elements.add(new Circle(random.nextInt(10), 20, 5, Color.GREEN));
+                ArrayList<Circle> elements = new ArrayList<>();
+                //elements.add(new Circle(TILE_WIDTH / 4, TILE_HEIGHT / 4, random.nextInt(10), Color.NAVY));
+                elements.add(new Circle(TILE_WIDTH / 4, TILE_HEIGHT / 4, 10, Color.WHITE));
+                elements.add(new Circle(TILE_WIDTH * (3 / 4), TILE_HEIGHT / 4, 10, Color.GREEN));
+                elements.add(new Circle(TILE_WIDTH * (3 / 4), TILE_HEIGHT * (3 / 4), 10, Color.WHITE));
+                //elements.add(new Circle(random.nextInt(10), 20, 5, Color.GREEN));
 
                 tiles.add(new Tile(elements, (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP))));
 
@@ -100,52 +104,80 @@ public class TilesGame extends Application {
         stage.setScene(scene);
         stage.show();
 
+        // Main game loop
         AnimationTimer a = new AnimationTimer() {
 
-            private long nextTime = 0;
-            double mouseClick_x1 = -1, mouseClick_y1 = -1;  // First chosen tile
-            double mouseClick_x2 = -1, mouseClick_y2 = -1; // Second chosen tile
+            private long nextTime = 0; // For incrementing animation timer counter
+            double mouseClick_x = -1, mouseClick_y = -1;  // Click coordinate holders
             int choiceState = 0; // # of tiles currently selected
-            int row_1, row_2, col_1, col_2;
+            int row_1, row_2, col_1, col_2; // Positions of chosen tiles
 
             @Override
             public void handle(long now) {
 
                 if(now > nextTime) {
 
-                    // First tile is chosen
-                    if(choiceState == 0 && mouseInput.getX() > -1) {
+                    mouseClick_x = mouseInput.getX();
+                    mouseClick_y = mouseInput.getY();
 
-                        mouseClick_x1 = mouseInput.getX();
-                        mouseClick_y1 = mouseInput.getY();
+                    if(choiceState == 0 && mouseClick_x > -1) { // Choose the first tile
 
-                        row_1 = (int) (mouseClick_x1 / (H_GAP + TILE_WIDTH));
-                        col_1 = (int) (mouseClick_y1 / (V_GAP + TILE_HEIGHT));
+                        row_1 = (int) (mouseClick_y / (H_GAP + TILE_WIDTH));
+                        col_1 = (int) (mouseClick_x / (V_GAP + TILE_HEIGHT));
 
-                        int index = (NUM_COLS * row_1) + col_1;
+                        choiceIndex1 = (NUM_COLS * row_1) + col_1;
 
-                        sceneGroup.getChildren().add(new Rectangle(tiles.get(index).getX(), tiles.get(index).getY(), 100, 100));
+                        // Tile choice indicator
+                        tiles.get(choiceIndex1).setColor(Color.GREEN);
 
-                        choiceState++;
-                        mouseInput.reset();
-
-                    } else if(choiceState == 1 && mouseInput.getX() > -1) {
-                        // Second tile is chosen
-
-                        mouseClick_x2 = mouseInput.getX();
-                        mouseClick_y2 = mouseInput.getY();
-
-                        row_2 = (int) (mouseClick_x2 / (H_GAP + TILE_WIDTH));
-                        col_2 = (int) (mouseClick_y2 / (V_GAP + TILE_HEIGHT));
+                        choice1 = tiles.get(choiceIndex1);
 
                         choiceState++;
-                        mouseInput.reset();
 
-                    } else if(choiceState == 2) {
+                    } else if(choiceState == 1 && mouseClick_x > -1) { // Choose the second tile
 
+                        row_2 = (int) (mouseClick_y / (H_GAP + TILE_WIDTH));
+                        col_2 = (int) (mouseClick_x / (V_GAP + TILE_HEIGHT));
 
+                        choiceIndex2 = (NUM_COLS * row_2) + col_2;
+
+                        // Tile choice indicator
+                        tiles.get(choiceIndex2).setColor(Color.GREEN);
+
+                        choice2 = tiles.get(choiceIndex2);
+
+                        choiceState++;
+
+                    } else if(choiceState == 2) { // 2 tiles chosen, compare elements
+
+                        ArrayList<Circle> matched = tiles.get(choiceIndex1).matchElements(tiles.get(choiceIndex2));
+
+                        if(!matched.isEmpty()) {
+
+                            System.out.println("Matched!");
+
+                            tiles.get(choiceIndex2).removeElements(matched);
+
+                            // Clear first tile choice
+                            tiles.get(choiceIndex1).setColor();
+
+                            choiceIndex1 = choiceIndex2;
+
+                        } else {
+
+                            System.out.println("No matches!");
+
+                            // Clear tile markers
+                            tiles.get(choiceIndex1).setColor();
+                            tiles.get(choiceIndex2).setColor();
+
+                        }
+
+                        choiceState = 0;
 
                     }
+
+                    mouseInput.reset();
 
                     // Check for input every 0.1 seconds
                     nextTime = now + Duration.ofMillis(100).toNanos();

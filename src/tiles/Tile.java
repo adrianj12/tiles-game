@@ -17,8 +17,10 @@ public class Tile {
 
     // Array of tile background colors to choose from
     //Color[] bgColors = new Color[5];
-    Color bgColors1 = Color.NAVY;
-    Color bgColors2 = Color.GREY;
+    private static Color bgColors1 = Color.NAVY;
+    private static Color bgColors2 = Color.GREY;
+
+    private final Color bgDefault;
 
     public Tile(ArrayList<Circle> elements, int x, int y) {
 
@@ -26,8 +28,8 @@ public class Tile {
         this.x = x;
         this.y = y;
 
-        Color bg = (bgColor)? bgColors1 : bgColors2;
-        square = new Rectangle(100, 100, bg);
+        this.bgDefault = (bgColor)? bgColors1 : bgColors2;
+        square = new Rectangle(100, 100, bgDefault);
         group.getChildren().add(square);
 
         bgColor = !bgColor;
@@ -40,18 +42,60 @@ public class Tile {
 
     }
 
-    public static boolean matchObjects(Tile first, Tile second) {
+    public ArrayList<Circle> matchElements(Tile compare) {
 
-        boolean matchExist = false;
+        ArrayList<Circle> matched = new ArrayList<>();
 
+        for(Circle element1 : compare.elements) {
 
+            for(Circle element2 : elements) {
 
-        return matchExist;
+                if(equalsElement(element1, element2)) matched.add(element2);
+
+            }
+
+        }
+
+        removeElements(matched);
+
+        return matched;
 
     }
 
-    protected void removeElements(ArrayList<Circle> elements) {
-        elements.removeAll(elements);
+    private static boolean equalsElement(Circle c, Circle d) {
+
+        if(c.getCenterX() == d.getCenterX() &&
+                c.getCenterY() == d.getCenterY() &&
+                c.getFill() == d.getFill()) return true;
+
+        return false;
+
+    }
+
+    public void removeElements(ArrayList<Circle> elements) {
+
+        for(Circle c : elements) {
+
+            for(Circle d : this.elements) {
+
+                if(equalsElement(c, d)) this.elements.remove(d);
+
+            }
+
+        }
+
+    }
+
+    public void setColor(Color bgColor) {
+
+        group.getChildren().set(group.getChildren().indexOf(square), new Rectangle(100, 100, bgColor));
+
+    }
+
+    public void setColor() {
+
+        //group.getChildren().set(group.getChildren().indexOf(square), new Rectangle(100, 100, bgDefault));
+
     }
 
     public int getX() {
