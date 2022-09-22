@@ -45,7 +45,7 @@ public class TilesGame extends Application {
     private static Color bgColors1 = Color.NAVY;
     private static Color bgColors2 = Color.GREY;
 
-    // User-selected tiles
+    // Holders for user-selected tiles
     private static int choiceIndex1, choiceIndex2;
 
     // Game score variables
@@ -112,9 +112,13 @@ public class TilesGame extends Application {
         InputState mouseInput = new InputState();
         board.setOnMouseClicked(mouseInput.getMouseHandler());
 
+        // Bottom screen score text
         Text streakCurrent = new Text(0, windowHeight - 80, "Current Streak: ");
         Text streakLongest = new Text(0, windowHeight - 60, "Longest Streak: ");
-        sceneGroup.getChildren().addAll(board, streakCurrent, streakLongest);
+        Text scoreStreakCurrent = new Text(120, windowHeight - 80, String.valueOf(streak));
+        Text scoreStreakLongest = new Text(120, windowHeight - 60, String.valueOf(longestStreak));
+
+        sceneGroup.getChildren().addAll(board, streakCurrent, streakLongest, scoreStreakLongest, scoreStreakCurrent);
 
         Scene scene = new Scene(sceneGroup, stage.getWidth(), stage.getHeight());
 
@@ -164,7 +168,7 @@ public class TilesGame extends Application {
 
                            matches = Tile.matchElements(tiles.get(choiceIndex1), tiles.get(choiceIndex2));
 
-                            if (!matches.isEmpty()) {System.out.println("Matches!");
+                            if (!matches.isEmpty()) {
 
                                 // Remove the matching elements from both tiles
                                 tiles.get(choiceIndex1).removeElements(matches);
@@ -187,7 +191,6 @@ public class TilesGame extends Application {
                                 tiles.get(choiceIndex2).setColor();
 
                                 choiceState = 0;
-
                                 streak = 0;
 
                             }
@@ -195,6 +198,9 @@ public class TilesGame extends Application {
                         }
 
                     }
+
+                    scoreStreakCurrent.setText(String.valueOf(streak));
+                    scoreStreakLongest.setText(String.valueOf(longestStreak));
 
                     mouseInput.reset();
 
