@@ -5,60 +5,57 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 
+import javafx.scene.paint.Paint;
+
 import java.util.ArrayList;
 
 public class Tile {
 
-    private ArrayList<Circle> elements;
+    private ArrayList<Element> elements = new ArrayList<>();
     private int x, y; // x-y coordinate of upper-left corner
     private Group group = new Group();
     private static boolean bgColor = false;
     private Rectangle square;
 
-    // Array of tile background colors to choose from
-    //Color[] bgColors = new Color[5];
-    private static Color bgColors1 = Color.NAVY;
-    private static Color bgColors2 = Color.GREY;
-
     private final Color bgDefault;
 
-    public Tile(ArrayList<Circle> elements, int x, int y) {
+    public Tile(ArrayList<Circle> elements, int x, int y, Color bgColor) {
 
-        this.elements = elements;
-        this.x = x;
-        this.y = y;
+        for(Circle c : elements) {
 
-        this.bgDefault = (bgColor)? bgColors1 : bgColors2;
-        square = new Rectangle(100, 100, bgDefault);
-        group.getChildren().add(square);
-
-        bgColor = !bgColor;
-
-        for(Circle element : elements) {
-
-            group.getChildren().add(element);
+            this.elements.add(new Element(c.getCenterX(), c.getCenterY(), c.getRadius(), c.getFill()));
 
         }
 
+        // Set default values
+        this.x = x;
+        this.y = y;
+        this.bgDefault = bgColor;
+
+        // Background square
+        square = new Rectangle(100, 100, bgDefault);
+        group.getChildren().add(square);
+
+        // Add the circles last to be on top
+        group.getChildren().addAll(elements);
+
     }
 
-    public ArrayList<Circle> matchElements(Tile compare) {
+    public static ArrayList<Circle> matchElements(Tile first, Tile second) {
 
-        ArrayList<Circle> matched = new ArrayList<>();
+        ArrayList<Circle> matches = new ArrayList<>();
 
-        for(Circle element1 : compare.elements) {
+        for(Element element1 : first.elements) {
 
-            for(Circle element2 : elements) {
+            for(Element element2 : second.elements) {
 
-                if(equalsElement(element1, element2)) matched.add(element2);
+                if(element1.equals(element2)) matches.add((Circle) element1);
 
             }
 
         }
 
-        removeElements(matched);
-
-        return matched;
+        return matches;
 
     }
 
@@ -76,11 +73,8 @@ public class Tile {
 
         for(Circle c : elements) {
 
-            for(Circle d : this.elements) {
-
-                if(equalsElement(c, d)) this.elements.remove(d);
-
-            }
+            this.elements.remove((Element) c);
+            group.getChildren().remove(1);
 
         }
 
@@ -88,13 +82,13 @@ public class Tile {
 
     public void setColor(Color bgColor) {
 
-        group.getChildren().set(group.getChildren().indexOf(square), new Rectangle(100, 100, bgColor));
+        group.getChildren().set(0, new Rectangle(100, 100, bgColor));
 
     }
 
     public void setColor() {
 
-        //group.getChildren().set(group.getChildren().indexOf(square), new Rectangle(100, 100, bgDefault));
+        group.getChildren().set(0, new Rectangle(100, 100, bgDefault));
 
     }
 
@@ -116,6 +110,32 @@ public class Tile {
 
     public Group getGroup() {
         return group;
+    }
+
+    private class Element extends Circle {
+
+        public Element(double centerX, double centerY, double radius, Paint color) {
+
+            this.setCenterX(centerX);
+            this.setCenterY(centerY);
+            this.setRadius(radius);
+            this.setFill(color);
+
+        }
+
+        @Override
+        public boolean equals(Object o) {
+
+            final Element e = (Element) o;
+
+            if (this.getCenterX() == e.getCenterX() &&
+                    this.getCenterY() == e.getCenterY() &&
+                    this.getFill() == e.getFill()) return true;
+
+            return false;
+
+        }
+
     }
 
 }
