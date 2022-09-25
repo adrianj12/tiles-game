@@ -12,34 +12,51 @@ import javafx.scene.layout.TilePane;
 import javafx.geometry.Orientation;
 
 // Graphics
-import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 public class TilesGame extends Application {
 
     // Tile parameters
-    private static final int NUM_ROWS = 6;
-    public static final int NUM_COLS = 6;
+    private static final int NUM_ROWS = 4; // The product of rows and columns MUST be even
+    public static final int NUM_COLS = 4;
     private static final int H_GAP = 5;
     private static final int V_GAP = 5;
     private static final int TILE_WIDTH = 100;
     private static final int TILE_HEIGHT = 100;
 
+    private static final Random rand = new Random();
+
     // Create Tile arrayList
     private static final ArrayList<Tile> tiles = new ArrayList<>(NUM_ROWS * NUM_COLS);
 
-    // Circle colors to choose randomly from
+    // Circle colors to choose randomly from -- DO NOT use NAVY, GREY, or GREEN (background colors)
     private static final Color[] colors = {
-            Color.GREEN,
+            Color.ORANGERED,
             Color.AQUAMARINE,
-            Color.FUCHSIA,
+            Color.WHITE,
             Color.PURPLE
+            /*
+            Color.BLACK,
+            Color.BURLYWOOD,
+            Color.CORAL,
+            Color.YELLOW,
+            Color.GOLD,
+            Color.LIGHTBLUE,
+            Color.LIME
+             */
     };
+
+    // Pairs of matches separated by location
+    private static ArrayList<Pair> pairsTL = new ArrayList<>();
+    private static ArrayList<Pair> pairsTR = new ArrayList<>();
+    private static ArrayList<Pair> pairsBL = new ArrayList<>();
+    private static ArrayList<Pair> pairsBR = new ArrayList<>();
 
     // Colors tiles alternate between
     private static Color bgColors1 = Color.NAVY;
@@ -84,19 +101,80 @@ public class TilesGame extends Application {
 
         Color bgColor = bgColors1;
 
-        Random random = new Random();
+        int numPairs = (NUM_ROWS * NUM_COLS) / 2;
+        int radius = 0;
+        Color color;
+        for(int i = 0; i < numPairs; i++) {
+
+            radius = rand.nextInt(5, 25);
+            color = colors[rand.nextInt(colors.length)];
+            pairsTL.add(new Pair(new Element(30, 30,
+                    radius, color)));
+            pairsTL.add(new Pair(new Element(30, 30,
+                    radius, color)));
+
+            radius = rand.nextInt(5, 25);
+            color = colors[rand.nextInt(colors.length)];
+            pairsTR.add(new Pair(new Element(70, 30,
+                    radius, color)));
+            pairsTR.add(new Pair(new Element(70, 30,
+                    radius, color)));
+
+            radius = rand.nextInt(5, 25);
+            color = colors[rand.nextInt(colors.length)];
+            pairsBR.add(new Pair(new Element(70, 70,
+                    radius, color)));
+            pairsBR.add(new Pair(new Element(70, 70,
+                    radius, color)));
+
+            radius = rand.nextInt(5, 25);
+            color = colors[rand.nextInt(colors.length)];
+            pairsBL.add(new Pair(new Element(30, 70,
+                    radius, color)));
+            pairsBL.add(new Pair(new Element(30, 70,
+                    radius, color)));
+
+        }
+
+        // Shuffle up the pairs
+        Collections.shuffle(pairsTR);
+        Collections.shuffle(pairsTL);
+        Collections.shuffle(pairsBR);
+        Collections.shuffle(pairsBL);
+
+        ArrayList<Element> elementGroup = new ArrayList<>(4);
+        int index = 0;
+        Pair holder;
         for(int i = 0; i < NUM_ROWS; i++) {
 
             for (int j = 0; j < NUM_COLS; j++) {
 
-                ArrayList<Circle> elements = new ArrayList<>();
+                // Top left
+                index = rand.nextInt(pairsTL.size());
+                holder = pairsTL.get(index);
+                elementGroup.add(holder.getElement());
+                pairsTL.remove(index);
+                System.out.println(pairsTR.size());
+                // Top right
+                index = rand.nextInt(pairsTR.size());
+                holder = pairsTR.get(index);
+                elementGroup.add(holder.getElement());
+                pairsTR.remove(index);
 
-                elements.add(new Circle(TILE_WIDTH / 4, TILE_HEIGHT / 4, 10, Color.WHITE));
-                elements.add(new Circle(TILE_WIDTH * (3 / 4), TILE_HEIGHT / 4, 10, Color.GREEN));
-                elements.add(new Circle(TILE_WIDTH * (3 / 4), TILE_HEIGHT * (3 / 4), 10, Color.WHITE));
-                //elements.add(new Circle(random.nextInt(10), 20, 5, Color.GREEN));
+                // Bottom left
+                index = rand.nextInt(pairsBL.size());
+                holder = pairsBL.get(index);
+                elementGroup.add(holder.getElement());
+                pairsBL.remove(index);
 
-                tiles.add(new Tile(elements, (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP)), bgColor));
+                // Bottom right
+                index = rand.nextInt(pairsBR.size());
+                holder = pairsBR.get(index);
+                elementGroup.add(holder.getElement());
+                pairsBR.remove(index);
+
+                tiles.add(new Tile(elementGroup, (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP)), bgColor));
+                elementGroup.clear();
 
                 // Alternate colors between tiles horizontally
                 if(!(NUM_COLS % 2 == 0 && j == (NUM_COLS - 1))) // This accounts for even-numbered columns
@@ -132,10 +210,12 @@ public class TilesGame extends Application {
             double mouseClick_x = -1, mouseClick_y = -1;  // Click coordinate holders
             int choiceState = 0; // # of tiles currently selected
             int row, col; // Positions of chosen tiles
-            ArrayList<Circle> matches = new ArrayList<>();
+            ArrayList<Element> matches = new ArrayList<>();
 
             @Override
             public void handle(long now) {
+
+                boolean isWon = false;
 
                 if(now > nextTime) {
 
@@ -164,7 +244,7 @@ public class TilesGame extends Application {
                         if(choiceIndex2 != choiceIndex1) {
 
                             // Tile choice indicator
-                            tiles.get(choiceIndex2).setColor(Color.GREEN);
+                            tiles.get(choiceIndex2).select();
 
                            matches = Tile.matchElements(tiles.get(choiceIndex1), tiles.get(choiceIndex2));
 
@@ -175,8 +255,9 @@ public class TilesGame extends Application {
                                 tiles.get(choiceIndex2).removeElements(matches);
 
                                 // Clear first tile choice
-                                tiles.get(choiceIndex1).setColor();
+                                tiles.get(choiceIndex1).deselect();
 
+                                // Switch to continue tile streak
                                 choiceIndex1 = choiceIndex2;
 
                                 streak++;
@@ -187,8 +268,8 @@ public class TilesGame extends Application {
                             } else {
 
                                 // Clear tile markers
-                                tiles.get(choiceIndex1).setColor();
-                                tiles.get(choiceIndex2).setColor();
+                                tiles.get(choiceIndex1).deselect();
+                                tiles.get(choiceIndex2).deselect();
 
                                 choiceState = 0;
                                 streak = 0;
@@ -204,6 +285,19 @@ public class TilesGame extends Application {
 
                     mouseInput.reset();
 
+                    // Check for win
+                    int won = 0;
+                    for(Tile tile : tiles) {
+
+                        if(tile.isEmpty()) won++;
+
+                    }
+                    if(won == tiles.size()) isWon = true;
+
+                    if(isWon) {
+                        scoreStreakCurrent.setText("You won!!");
+                    }
+
                     // Check for input every 0.1 seconds
                     nextTime = now + Duration.ofMillis(100).toNanos();
 
@@ -214,6 +308,23 @@ public class TilesGame extends Application {
         };
 
         a.start();
+
+    }
+
+    // @TODO: Remove this private class and just use Element(s)
+    private class Pair {
+
+        private Element element;
+
+        public Pair(Element e) {
+
+            this.element = e;
+
+        }
+
+        public Element getElement() {
+            return this.element;
+        }
 
     }
 

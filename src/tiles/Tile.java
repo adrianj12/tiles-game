@@ -2,10 +2,7 @@ package tiles;
 
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
-
-import javafx.scene.paint.Paint;
 
 import java.util.ArrayList;
 
@@ -13,17 +10,16 @@ public class Tile {
 
     private ArrayList<Element> elements = new ArrayList<>();
     private int x, y; // x-y coordinate of upper-left corner
-    private Group group = new Group();
-    private static boolean bgColor = false;
-    private Rectangle square;
+    private Group group = new Group(); // Main GUI group
+    private Rectangle square; // Tile background
 
     private final Color bgDefault;
 
-    public Tile(ArrayList<Circle> elements, int x, int y, Color bgColor) {
+    public Tile(ArrayList<Element> elements, int x, int y, Color bgColor) {
 
-        for(Circle c : elements) {
+        for(Element e : elements) {
 
-            this.elements.add(new Element(c.getCenterX(), c.getCenterY(), c.getRadius(), c.getFill()));
+            this.elements.add(new Element(e.getCenterX(), e.getCenterY(), e.getRadius(), e.getFill()));
 
         }
 
@@ -41,15 +37,15 @@ public class Tile {
 
     }
 
-    public static ArrayList<Circle> matchElements(Tile first, Tile second) {
+    public static ArrayList<Element> matchElements(Tile first, Tile second) {
 
-        ArrayList<Circle> matches = new ArrayList<>();
+        ArrayList<Element> matches = new ArrayList<>();
 
         for(Element element1 : first.elements) {
 
             for(Element element2 : second.elements) {
 
-                if(element1.equals(element2)) matches.add((Circle) element1);
+                if(element1.equals(element2)) matches.add(element1);
 
             }
 
@@ -59,22 +55,12 @@ public class Tile {
 
     }
 
-    private static boolean equalsElement(Circle c, Circle d) {
+    public void removeElements(ArrayList<Element> elements) {
 
-        if(c.getCenterX() == d.getCenterX() &&
-                c.getCenterY() == d.getCenterY() &&
-                c.getFill() == d.getFill()) return true;
+        for(Element e : elements) {
 
-        return false;
-
-    }
-
-    public void removeElements(ArrayList<Circle> elements) {
-
-        for(Circle c : elements) {
-
-            this.elements.remove((Element) c);
-            group.getChildren().remove(1);
+            this.elements.remove(e);
+            group.getChildren().removeAll(e);
 
         }
 
@@ -86,10 +72,18 @@ public class Tile {
 
     }
 
-    public void setColor() {
+    public void deselect() {
 
         group.getChildren().set(0, new Rectangle(100, 100, bgDefault));
 
+    }
+
+    public void select() {
+        this.square.setFill(Color.GREEN);
+    }
+
+    public boolean isEmpty() {
+        return (this.elements.isEmpty());
     }
 
     public int getX() {
@@ -110,32 +104,6 @@ public class Tile {
 
     public Group getGroup() {
         return group;
-    }
-
-    private class Element extends Circle {
-
-        public Element(double centerX, double centerY, double radius, Paint color) {
-
-            this.setCenterX(centerX);
-            this.setCenterY(centerY);
-            this.setRadius(radius);
-            this.setFill(color);
-
-        }
-
-        @Override
-        public boolean equals(Object o) {
-
-            final Element e = (Element) o;
-
-            if (this.getCenterX() == e.getCenterX() &&
-                    this.getCenterY() == e.getCenterY() &&
-                    this.getFill() == e.getFill()) return true;
-
-            return false;
-
-        }
-
     }
 
 }
