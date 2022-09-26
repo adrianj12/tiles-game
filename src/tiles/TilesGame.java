@@ -1,8 +1,18 @@
+/**
+ *
+ * @author Adrian Abeyta <ajabeyta@unm.edu>
+ * @description Main file for running Tiles game - entry point to program
+ * @usage Main application, no CLI arguments
+ * @name TilesGame
+ *
+ */
+
 package tiles;
 
 // Animation
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import java.time.Duration;
 
 // GUI components
 import javafx.scene.Scene;
@@ -15,7 +25,7 @@ import javafx.geometry.Orientation;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 
-import java.time.Duration;
+// Utilities
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -24,7 +34,7 @@ public class TilesGame extends Application {
 
     // Tile parameters
     private static final int NUM_ROWS = 4; // The product of rows and columns MUST be even
-    public static final int NUM_COLS = 4;
+    private static final int NUM_COLS = 4;
     private static final int H_GAP = 5;
     private static final int V_GAP = 5;
     private static final int TILE_WIDTH = 100;
@@ -41,7 +51,8 @@ public class TilesGame extends Application {
             Color.AQUAMARINE,
             Color.WHITE,
             Color.PURPLE
-            /*
+
+/*          @TODO: make it work with more colors
             Color.BLACK,
             Color.BURLYWOOD,
             Color.CORAL,
@@ -49,18 +60,19 @@ public class TilesGame extends Application {
             Color.GOLD,
             Color.LIGHTBLUE,
             Color.LIME
-             */
+*/
+
     };
 
     // Pairs of matches separated by location
-    private static ArrayList<Pair> pairsTL = new ArrayList<>();
-    private static ArrayList<Pair> pairsTR = new ArrayList<>();
-    private static ArrayList<Pair> pairsBL = new ArrayList<>();
-    private static ArrayList<Pair> pairsBR = new ArrayList<>();
+    private static final ArrayList<Element> pairsTL = new ArrayList<>();
+    private static final ArrayList<Element> pairsTR = new ArrayList<>();
+    private static final ArrayList<Element> pairsBL = new ArrayList<>();
+    private static final ArrayList<Element> pairsBR = new ArrayList<>();
 
     // Colors tiles alternate between
-    private static Color bgColors1 = Color.NAVY;
-    private static Color bgColors2 = Color.GREY;
+    private static final Color bgColors1 = Color.NAVY;
+    private static final Color bgColors2 = Color.GREY;
 
     // Holders for user-selected tiles
     private static int choiceIndex1, choiceIndex2;
@@ -68,26 +80,34 @@ public class TilesGame extends Application {
     // Game score variables
     private static int streak = 0, longestStreak = 0;
 
+    /**
+     * @description Only runs the JavaFX application launch method
+     * @param args CLI arguments (none accepted)
+     */
     public static void main(String[] args) {
 
         launch(args);
 
     }
 
+    /**
+     * @description method to display JavaFX GUI -- describes an OS window
+     * @param stage the primary stage for this application, onto which
+     * the application scene can be set.
+     * Applications may create other stages, if needed, but they will not be
+     * primary stages.
+     */
     @Override
     public void start(Stage stage) {
 
         // Set window/stage properties for game
         stage.setTitle("Tiles Game by Adrian Abeyta");
-        //stage.setResizable(false);
+        stage.setResizable(false);
 
-        int windowWidth = (NUM_COLS * TILE_WIDTH) + ((NUM_COLS - 1) * H_GAP * 2);
+        int windowWidth = (NUM_COLS * TILE_WIDTH) + (NUM_COLS  * H_GAP * 2);
         stage.setWidth(windowWidth);
-        int windowHeight = (NUM_ROWS * TILE_HEIGHT + ((NUM_ROWS - 1) * V_GAP * 2)) + 100;
+        int windowHeight = (NUM_ROWS * TILE_HEIGHT + (NUM_ROWS * V_GAP * 2) + 100);
         stage.setHeight(windowHeight);
-
-        //System.out.println(stage.getWidth());
-        // WHY DOESNT THIS WORK
 
         Group sceneGroup = new Group();
 
@@ -99,40 +119,43 @@ public class TilesGame extends Application {
         board.setPrefTileWidth(TILE_WIDTH);
         board.setPrefTileHeight(TILE_HEIGHT);
 
-        Color bgColor = bgColors1;
-
+        // How many pairs we need to generate in total
         int numPairs = (NUM_ROWS * NUM_COLS) / 2;
-        int radius = 0;
+
+        // Holder variables for transferring element properties
+        int radius;
         Color color;
+
+        // Generate duplicate matches for each corner of every Tile
         for(int i = 0; i < numPairs; i++) {
 
             radius = rand.nextInt(5, 25);
             color = colors[rand.nextInt(colors.length)];
-            pairsTL.add(new Pair(new Element(30, 30,
-                    radius, color)));
-            pairsTL.add(new Pair(new Element(30, 30,
-                    radius, color)));
+            pairsTL.add(new Element(30, 30,
+                    radius, color));
+            pairsTL.add(new Element(30, 30,
+                    radius, color));
 
             radius = rand.nextInt(5, 25);
             color = colors[rand.nextInt(colors.length)];
-            pairsTR.add(new Pair(new Element(70, 30,
-                    radius, color)));
-            pairsTR.add(new Pair(new Element(70, 30,
-                    radius, color)));
+            pairsTR.add(new Element(70, 30,
+                    radius, color));
+            pairsTR.add(new Element(70, 30,
+                    radius, color));
 
             radius = rand.nextInt(5, 25);
             color = colors[rand.nextInt(colors.length)];
-            pairsBR.add(new Pair(new Element(70, 70,
-                    radius, color)));
-            pairsBR.add(new Pair(new Element(70, 70,
-                    radius, color)));
+            pairsBR.add(new Element(70, 70,
+                    radius, color));
+            pairsBR.add(new Element(70, 70,
+                    radius, color));
 
             radius = rand.nextInt(5, 25);
             color = colors[rand.nextInt(colors.length)];
-            pairsBL.add(new Pair(new Element(30, 70,
-                    radius, color)));
-            pairsBL.add(new Pair(new Element(30, 70,
-                    radius, color)));
+            pairsBL.add(new Element(30, 70,
+                    radius, color));
+            pairsBL.add(new Element(30, 70,
+                    radius, color));
 
         }
 
@@ -142,38 +165,37 @@ public class TilesGame extends Application {
         Collections.shuffle(pairsBR);
         Collections.shuffle(pairsBL);
 
-        ArrayList<Element> elementGroup = new ArrayList<>(4);
-        int index = 0;
-        Pair holder;
+        // Add matching elements tile by tile
+        int index;
+        Color bgColor = bgColors1;
         for(int i = 0; i < NUM_ROWS; i++) {
 
             for (int j = 0; j < NUM_COLS; j++) {
 
+                ArrayList<Element> elementGroup = new ArrayList<>(4);
+
+                //@TODO: Make pairs a multidimensional array to reduce lines
                 // Top left
                 index = rand.nextInt(pairsTL.size());
-                holder = pairsTL.get(index);
-                elementGroup.add(holder.getElement());
+                elementGroup.add(pairsTL.get(index));
                 pairsTL.remove(index);
-                System.out.println(pairsTR.size());
+
                 // Top right
                 index = rand.nextInt(pairsTR.size());
-                holder = pairsTR.get(index);
-                elementGroup.add(holder.getElement());
+                elementGroup.add(pairsTR.get(index));
                 pairsTR.remove(index);
 
                 // Bottom left
                 index = rand.nextInt(pairsBL.size());
-                holder = pairsBL.get(index);
-                elementGroup.add(holder.getElement());
+                elementGroup.add(pairsBL.get(index));
                 pairsBL.remove(index);
 
                 // Bottom right
                 index = rand.nextInt(pairsBR.size());
-                holder = pairsBR.get(index);
-                elementGroup.add(holder.getElement());
+                elementGroup.add(pairsBR.get(index));
                 pairsBR.remove(index);
 
-                tiles.add(new Tile(elementGroup, (i * (TILE_WIDTH + H_GAP)), (j * (TILE_HEIGHT + V_GAP)), bgColor));
+                tiles.add(new Tile(elementGroup, bgColor));
                 elementGroup.clear();
 
                 // Alternate colors between tiles horizontally
@@ -196,22 +218,32 @@ public class TilesGame extends Application {
         Text scoreStreakCurrent = new Text(120, windowHeight - 80, String.valueOf(streak));
         Text scoreStreakLongest = new Text(120, windowHeight - 60, String.valueOf(longestStreak));
 
+        // Add all nodes to the scene
         sceneGroup.getChildren().addAll(board, streakCurrent, streakLongest, scoreStreakLongest, scoreStreakCurrent);
 
+        // Scene setting up
         Scene scene = new Scene(sceneGroup, stage.getWidth(), stage.getHeight());
-
         stage.setScene(scene);
         stage.show();
 
-        // Main game loop
+        // ***** Main game loop *****
         AnimationTimer a = new AnimationTimer() {
 
             private long nextTime = 0; // For incrementing animation timer counter
             double mouseClick_x = -1, mouseClick_y = -1;  // Click coordinate holders
             int choiceState = 0; // # of tiles currently selected
             int row, col; // Positions of chosen tiles
+
+            // Container for matching elements between tiles
             ArrayList<Element> matches = new ArrayList<>();
 
+            /**
+             * @description loops infinitely beginning with 'now' parameter time
+             * @param now
+             *            The timestamp of the current frame given in nanoseconds. This
+             *            value will be the same for all {@code AnimationTimers} called
+             *            during one frame.
+             */
             @Override
             public void handle(long now) {
 
@@ -222,57 +254,67 @@ public class TilesGame extends Application {
                     mouseClick_x = mouseInput.getX();
                     mouseClick_y = mouseInput.getY();
 
-                    if(choiceState == 0 && mouseClick_x > -1) { // Choose the first tile
+                    row = (int) (mouseClick_y / (H_GAP + TILE_WIDTH));
+                    col = (int) (mouseClick_x / (V_GAP + TILE_HEIGHT));
 
-                        row = (int) (mouseClick_y / (H_GAP + TILE_WIDTH));
-                        col = (int) (mouseClick_x / (V_GAP + TILE_HEIGHT));
+                    if(mouseClick_x > -1) {
 
-                        choiceIndex1 = (NUM_COLS * row) + col;
+                        if(choiceState == 0) { // Choose the first tile
 
-                        // Tile choice indicator
-                        tiles.get(choiceIndex1).setColor(Color.GREEN);
-
-                        choiceState++;
-
-                    } else if(choiceState == 1 && mouseClick_x > -1) { // Choose the second tile
-
-                        row = (int) (mouseClick_y / (H_GAP + TILE_WIDTH));
-                        col = (int) (mouseClick_x / (V_GAP + TILE_HEIGHT));
-
-                        choiceIndex2 = (NUM_COLS * row) + col;
-
-                        if(choiceIndex2 != choiceIndex1) {
+                            choiceIndex1 = (NUM_COLS * row) + col;
 
                             // Tile choice indicator
-                            tiles.get(choiceIndex2).select();
+                            tiles.get(choiceIndex1).select();
 
-                           matches = Tile.matchElements(tiles.get(choiceIndex1), tiles.get(choiceIndex2));
+                            choiceState++;
 
-                            if (!matches.isEmpty()) {
+                        } else if(choiceState == 1) { // Choose the second tile
 
-                                // Remove the matching elements from both tiles
-                                tiles.get(choiceIndex1).removeElements(matches);
-                                tiles.get(choiceIndex2).removeElements(matches);
+                            choiceIndex2 = (NUM_COLS * row) + col;
 
-                                // Clear first tile choice
-                                tiles.get(choiceIndex1).deselect();
+                            if(choiceIndex2 != choiceIndex1) {
 
-                                // Switch to continue tile streak
-                                choiceIndex1 = choiceIndex2;
+                                // Tile choice indicator
+                                tiles.get(choiceIndex2).select();
 
-                                streak++;
-                                if (streak > longestStreak) longestStreak = streak;
+                                matches = Tile.matchElements(tiles.get(choiceIndex1), tiles.get(choiceIndex2));
 
-                                matches = null;
+                                if(!matches.isEmpty()) {
 
-                            } else {
+                                    // Remove the matching elements from both tiles
+                                    tiles.get(choiceIndex1).removeElements(matches);
+                                    tiles.get(choiceIndex2).removeElements(matches);
 
-                                // Clear tile markers
-                                tiles.get(choiceIndex1).deselect();
-                                tiles.get(choiceIndex2).deselect();
+                                    // Clear first tile choice
+                                    tiles.get(choiceIndex1).deselect();
 
-                                choiceState = 0;
-                                streak = 0;
+                                    // Second tile was fully cleared, start over
+                                    if (tiles.get(choiceIndex2).isEmpty()) {
+
+                                        choiceState = 0;
+                                        tiles.get(choiceIndex2).deselect();
+
+                                    }
+
+                                    // Switch to continue tile streak
+                                    choiceIndex1 = choiceIndex2;
+
+                                    // Keep track of score streak
+                                    streak++;
+                                    if (streak > longestStreak) longestStreak = streak;
+
+                                    matches = null;
+
+                                } else {
+
+                                    // Clear tile markers
+                                    tiles.get(choiceIndex1).deselect();
+                                    tiles.get(choiceIndex2).deselect();
+
+                                    choiceState = 0;
+                                    streak = 0;
+
+                                }
 
                             }
 
@@ -280,6 +322,7 @@ public class TilesGame extends Application {
 
                     }
 
+                    // Update GUI with streak data
                     scoreStreakCurrent.setText(String.valueOf(streak));
                     scoreStreakLongest.setText(String.valueOf(longestStreak));
 
@@ -294,12 +337,13 @@ public class TilesGame extends Application {
                     }
                     if(won == tiles.size()) isWon = true;
 
+                    // @TODO: make this fancier with a larger text size or alert box
                     if(isWon) {
-                        scoreStreakCurrent.setText("You won!!");
+                        scoreStreakCurrent.setText("You cleared the board!!");
                     }
 
-                    // Check for input every 0.1 seconds
-                    nextTime = now + Duration.ofMillis(100).toNanos();
+                    // Check for input every 0.01 seconds
+                    nextTime = now + Duration.ofMillis(10).toNanos();
 
                 }
 
@@ -308,23 +352,6 @@ public class TilesGame extends Application {
         };
 
         a.start();
-
-    }
-
-    // @TODO: Remove this private class and just use Element(s)
-    private class Pair {
-
-        private Element element;
-
-        public Pair(Element e) {
-
-            this.element = e;
-
-        }
-
-        public Element getElement() {
-            return this.element;
-        }
 
     }
 
